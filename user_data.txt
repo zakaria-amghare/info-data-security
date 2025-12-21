@@ -1,0 +1,3 @@
+Name: ExampleUser
+Salt: 1766235193
+Hash: examplehashvalue1234567890abcdef
