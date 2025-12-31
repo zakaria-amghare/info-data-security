@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "dataStructure.h"
 #include <openssl/sha.h>
+#include<time.h>
 
 void create_file_if_not_exists(const char *filename) {
     FILE *file = fopen(filename, "r");
@@ -23,6 +24,8 @@ void create_file_if_not_exists(const char *filename) {
         }
     }
 }
+
+
 
 void add_user(const char *filename, user_data *user) {
     FILE *file = fopen(filename, "r+b");
@@ -88,6 +91,7 @@ void read_file(const char *filename) {
     fclose(file);
 }
 
+
 #include <openssl/evp.h> // Change the header to include EVP
 
 void sha256(const char *string, char outputBuffer[65])
@@ -116,4 +120,27 @@ void sha256(const char *string, char outputBuffer[65])
         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
     }
     outputBuffer[64] = '\0';
+}
+
+user_data create_user(const char *name, const char *password) {
+    user_data user;
+    
+    
+    strncpy(user.nom, name, sizeof(user.nom) - 1);
+    user.nom[sizeof(user.nom) - 1] = '\0';
+    
+    
+    time_t now = time(NULL);
+    sprintf(user.salte, "%ld", now % 1000000000000000);
+    user.salte[sizeof(user.salte) - 1] = '\0';
+    
+    
+    char password_with_salt[256];
+    snprintf(password_with_salt, sizeof(password_with_salt), "%s%s", 
+             password, user.salte);
+    
+    
+    sha256(password_with_salt, user.hash); 
+    
+    return user;
 }
