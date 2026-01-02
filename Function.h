@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include "dataStructure.h"
 #include <openssl/sha.h>
+#include <ctype.h>  
+#include <string.h>
+#include <stdbool.h>
 #include<time.h>
 
 void create_file_if_not_exists(const char *filename) {
@@ -122,6 +125,33 @@ void sha256(const char *string, char outputBuffer[65])
     outputBuffer[64] = '\0';
 }
 
+bool password_checks(const char *password) {
+    bool has_length = false;
+    int length = strlen(password);
+    if (length < 8) {
+        has_length = false; 
+        printf("Password must be at least 8 characters long.\n");
+    }
+
+    bool has_upper = false, has_lower = false, has_digit = false, has_special = false;
+    const char *special_characters = "!@#$^&*()-_=+[]{}|;:'\",.<>?/`~";
+
+    for (int i = 0; i < length; i++) {
+        if (isupper(password[i])) has_upper = true;
+        else if (islower(password[i])) has_lower = true;
+        else if (isdigit(password[i])) has_digit = true;
+        else if (strchr(special_characters, password[i])) has_special = true;
+    }
+    if (!has_digit){printf("Password must contain at least one digit.\n"); }
+    if (!has_lower){printf("Password must contain at least one lowercase letter.\n");}
+    if (!has_upper){printf("Password must contain at least one uppercase letter.\n"); }
+    if (!has_special){printf("Password must contain at least one special character.\n"); }
+    
+    
+    return has_upper && has_lower && has_digit && has_special;
+}
+
+
 user_data create_user(const char *name, const char *password) {
     user_data user;
     
@@ -134,7 +164,10 @@ user_data create_user(const char *name, const char *password) {
     sprintf(user.salte, "%ld", now % 1000000000000000);
     user.salte[sizeof(user.salte) - 1] = '\0';
     
-    
+    if (!password_checks(password)) {
+        printf("Password does not meet requirements.\n");
+        exit(1);
+    }
     char password_with_salt[256];
     snprintf(password_with_salt, sizeof(password_with_salt), "%s%s", 
              password, user.salte);
